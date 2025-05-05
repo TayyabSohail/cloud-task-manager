@@ -1,42 +1,71 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { FiEdit, FiTrash2 } from "react-icons/fi"; // Using icons for Edit and Delete
+import { useEffect, useState, FormEvent } from "react";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 interface Todo {
   id: number;
   text: string;
 }
 
-export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, text: "Sample Task 1" },
-    { id: 2, text: "Sample Task 2" },
-  ]);
-  const [newTodo, setNewTodo] = useState<string>("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editText, setEditText] = useState<string>("");
+const userId = 1; // Replace with the actual logged-in user's ID
 
-  const createTodo = (e: FormEvent) => {
+export default function Home() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTodo, setNewTodo] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+
+  // Fetch todos from backend
+  useEffect(() => {
+    fetch(`http://localhost:5000/todos/${userId}`)
+      .then((res) => res.json())
+      .then((data) => setTodos(data))
+      .catch((err) => console.error("Error fetching todos:", err));
+  }, []);
+
+  // Create todo
+  const createTodo = async (e: FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
-    const newItem = {
-      id: Date.now(),
-      text: newTodo,
-    };
-    setTodos([...todos, newItem]); // Adding new item at the end of the list
-    setNewTodo("");
+
+    const res = await fetch("http://localhost:5000/todos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, text: newTodo }),
+    });
+
+    if (res.ok) {
+      const updatedTodos = await fetch(
+        `http://localhost:5000/todos/${userId}`
+      ).then((res) => res.json());
+      setTodos(updatedTodos);
+      setNewTodo("");
+    }
   };
 
-  const updateTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) => (todo.id === id ? { ...todo, text: editText } : todo))
+  // Update todo
+  const updateTodo = async (id: number) => {
+    await fetch(`http://localhost:5000/todos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: editText }),
+    });
+
+    const updatedTodos = todos.map((todo) =>
+      todo.id === id ? { ...todo, text: editText } : todo
     );
+    setTodos(updatedTodos);
     setEditingId(null);
     setEditText("");
   };
 
-  const deleteTodo = (id: number) => {
+  // Delete todo
+  const deleteTodo = async (id: number) => {
+    await fetch(`http://localhost:5000/todos/${id}`, {
+      method: "DELETE",
+    });
+
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
@@ -46,7 +75,6 @@ export default function Home() {
         Todo List
       </h1>
 
-      {/* Form for adding a new Todo */}
       <form onSubmit={createTodo} className="mb-6 flex gap-4 justify-center">
         <input
           type="text"
@@ -63,7 +91,6 @@ export default function Home() {
         </button>
       </form>
 
-      {/* List of Todos */}
       <ul className="space-y-6">
         {todos.map((todo) => (
           <li
@@ -72,7 +99,6 @@ export default function Home() {
           >
             {editingId === todo.id ? (
               <div className="w-full">
-                {/* Input and buttons aligned correctly */}
                 <div className="flex items-center gap-4 mb-4">
                   <input
                     type="text"

@@ -1,7 +1,15 @@
+"use client";
+
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HeroHome() {
+  const router = useRouter();
+
+  const handleStartBuilding = () => {
+    router.push("/signin");
+  };
+
   return (
     <section>
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -27,19 +35,17 @@ export default function HeroHome() {
               </p>
               <div className="mx-auto max-w-xs sm:flex sm:max-w-none sm:justify-center">
                 <div data-aos="fade-up" data-aos-delay={400}>
-                  <a
+                  <button
+                    onClick={handleStartBuilding}
                     className="btn group mb-4 w-full bg-linear-to-t from-indigo-600 to-indigo-500 bg-[length:100%_100%] bg-[bottom] text-white shadow-[inset_0px_1px_0px_0px_--theme(--color-white/.16)] hover:bg-[length:100%_150%] sm:mb-0 sm:w-auto"
-                    href="#0"
                   >
-                    <Link href="/user-info">
-                      <span className="relative inline-flex items-center">
-                        Start Building
-                        <span className="ml-1 tracking-normal text-white/50 transition-transform group-hover:translate-x-0.5">
-                          -&gt;
-                        </span>
+                    <span className="relative inline-flex items-center">
+                      Start Building
+                      <span className="ml-1 tracking-normal text-white/50 transition-transform group-hover:translate-x-0.5">
+                        -&gt;
                       </span>
-                    </Link>
-                  </a>
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
